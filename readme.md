@@ -2,10 +2,12 @@
 
 Using a next task scheduling queue and periodic polling timers.
 
+In the [.release](.release) folders some example and release versions can be found.
+
 ## Disclaimers!
 
-- Never've been tested on hardware!
+- Passed some tests on hardware!
 
-- Buttons are a little iffy.  Might need to set the polling rate once the timers function properly.
+- Buttons are a little iffy. Might need to set the different polling rate.
 
 - This Code is an example of what the Germans call `UNFUG`.
