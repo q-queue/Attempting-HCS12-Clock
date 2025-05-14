@@ -176,7 +176,7 @@ render_time_trigger:
                 DEC_RESET lcd_title, return_interrupt
 
                 LDX #render_title
-                JSR queue_x        
+                JSR queue_x
 
 return_interrupt        RTI
 

@@ -25,6 +25,8 @@
                 __isrETC2_ADDRESS:    EQU __TIMER_INTERRUPT_VECTOR_TABLE_BASE_ADDRESS + 10
                 __isrETC1_ADDRESS:    EQU __TIMER_INTERRUPT_VECTOR_TABLE_BASE_ADDRESS + 12
                 __isrETC0_ADDRESS:    EQU __TIMER_INTERRUPT_VECTOR_TABLE_BASE_ADDRESS + 14
+                
+       ;; Need to specify TCTL Register and Mode!
 
 ; - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - -- - --
 
@@ -78,14 +80,5 @@
                 ;; Mackerels calling Mackerels
         ENDM
 
-; - -- - -- - -- - -- - -- - --
 
-        QUEUE_TASK: MACRO
-
-                ;; puts a task on the queue
-                ;; modifies the X register
-
-                LDX #\1
-                JSR queue_x
-        ENDM
 
