@@ -25,10 +25,13 @@
 
 
         ;; Timer Config
-                __isrETC_ADDRESS:              EQU __isrETC7_ADDRESS
-                CLOCK_TIMER_CH:                EQU TIMER_CH7
-                TC:                            EQU TC7
+                __isrETC_ADDRESS:              EQU __isrETC4_ADDRESS
+                CLOCK_TIMER_CH:                EQU TIMER_CH4
+                TC:                            EQU TC4
                 NEXT_TIMER_TRIGGER:            EQU TEN_MS
+
+                TCTL:                          EQU TCTL1      ;; Timer Control Logic Register 1 for CH4
+                TCTL_MODE:                     EQU $03        ;; Lower two bits are specific for CH4
 
 ; - -- - -- - -- - -- - -- - -- - -- - --
 
@@ -55,19 +58,18 @@
 
                 DEFINE_COUNTER clock,            100
 
-                DEFINE_COUNTER polling,          30
+                DEFINE_COUNTER polling,          20
 
-                DEFINE_COUNTER lcd_time_line,    50     ;; 2 FPS
+                DEFINE_COUNTER lcd_time_line,    20     ;; 5 FPS
+
+                DEFINE_COUNTER thermometer,      50
 
         ;; Dependent Counters: n * dependency ticks
                 ;; should be less frequent
 
                 ;; build on top of lcd_time_line.
-                DEFINE_COUNTER lcd_title,        20
+                DEFINE_COUNTER lcd_title,        50
                 ;; e.g. lcd_title timer will be: 20 * 50 * 10ms = 10_000ms
-
-                ;; build on top of lcd_title.   ; in prod should be even less frequent
-                DEFINE_COUNTER thermometer,      1
 
         ;; Counter dependency behavior is defined in the interrupt service routine!
 
@@ -110,7 +112,7 @@ init_clock_timer:
         RESET_COUNTER polling
 
         ;; Start Timer
-        BCLR TCTL1, #CLOCK_TIMER_CH
+        BCLR TCTL, #TCTL_MODE
 
         RTS
 
@@ -137,45 +139,44 @@ isrETC:
 
         BSET TFLG1, #CLOCK_TIMER_CH
 
-polling_time_countdown:
+polling_trigger:
 
-        DEC_RESET polling, ticking_clock
+        DEC_RESET polling, clock_trigger
 
         JSR poll_buttons 
 
-ticking_clock:
+clock_trigger:
 
-        DEC_RESET clock, render_screen_time_countdown
+        DEC_RESET clock, thermometer_trigger
 
         LDX CLOCK_MODE
         JSR X
 
+thermometer_trigger:
 
-render_screen_time_countdown:
+        DEC_RESET thermometer, render_time_trigger
+
+        LDX #poll_thermometer
+        JSR queue_x
+
+render_time_trigger:
 
         DEC_RESET lcd_time_line, return_interrupt ;; Chained Counter!
         ;; Skips whats below without Reset!!
 
-        QUEUE_TASK render_time
+        LDX #render_time
+        JSR queue_x
 
-render_screen_title_countdown:
+        render_title_trigger:
 
-        ;; ticks once when lcd_time_line resets.
-                ;; actual timer is n * lcd_time_line
-                ;; dependent counter!
+                ;; ticks once when lcd_time_line resets.
+                        ;; actual timer is n * lcd_time_line
+                        ;; dependent counter!
 
-        DEC_RESET lcd_title, return_interrupt
+                DEC_RESET lcd_title, return_interrupt
 
-        QUEUE_TASK render_title
-
-poll_thermometer_countdown:
-
-        ;; ticks only once when lcd_title resets
-        ;; multiplied by the title timer ; ;; in sequence with render_screen_title_countdown
-
-        DEC_RESET thermometer, return_interrupt
-
-        QUEUE_TASK poll_thermometer
+                LDX #render_title
+                JSR queue_x        
 
 return_interrupt        RTI
 
