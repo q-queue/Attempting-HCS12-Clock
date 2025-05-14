@@ -49,12 +49,12 @@ init_queue:
         ;; modifies the X register!
         ROTATE_WPTR:   MACRO    ;; rotate word pointer ; increment lower byte LSB by 2.
 
-                PSHD
-                        LDD \1
-                        ADDB #2 ;; wrap around to reserved address byte start when overflow
-                        STD \1
-                PULD
-
+                      INC \1 +1
+                      INC \1 +1
+                      ;; increment LSB twice
+                      ;; inc is an operation on a 8-bit register
+                      ;; overflow guaranteed to be ignore!
+                      ;; in this case this exact behavior is required.
         ENDM
 
 ; - -- - -- - -- - -- - -- - --
