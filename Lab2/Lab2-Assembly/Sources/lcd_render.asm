@@ -32,7 +32,7 @@
 
 
         ;; Alignment Guaranteed!
-        LCD_LINE_WIDTH:           EQU 16  ;; change here when using different LCD.
+        LCD_LINE_WIDTH:           EQU 15  ;; change here when using different LCD.
 
         lcd_time_line:            DS.B LCD_LINE_WIDTH
 
@@ -49,10 +49,17 @@
                 ;; left aligned
                 temperature_str:                EQU lcd_time_line + LCD_LINE_WIDTH - 5
                 temperature_unit_str:           EQU lcd_time_line + LCD_LINE_WIDTH - 2
-                end_of_time_line:               EQU lcd_time_line + LCD_LINE_WIDTH - 1
+
+
+                IFNDEF  _HCS12_SERIALMON
+                      temperature_unit_grade_encoding:      EQU $B0
+                ELSE
+                      temperature_unit_grade_encoding:      EQU $DF
+                ENDIF
 
 
         CURRENT_TITLE:          DS.W 1
+
 
 ; ROM: Data
 .const: SECTION
@@ -147,9 +154,9 @@ init_time_line:
         MOVB #':', hm_separator
         MOVB #':', ms_separator
 
-        MOVB #'C', temperature_unit_str
 
-        MOVB #0, end_of_time_line              ;; NULL Termination! Over Caution.
+        MOVB #temperature_unit_grade_encoding, temperature_unit_str
+        MOVB #'C', temperature_unit_str +1
 
         ;; rest of the values are volatile!
 
