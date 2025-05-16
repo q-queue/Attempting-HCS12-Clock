@@ -138,9 +138,9 @@ REG_SEL:  equ   $01     ; Bit 0 on LCDCTRL: signal RS: 0=reg,    1=data
         ENABLE:   equ   $02     ; Bit 1 on LCDCTRL: signal E:  0=disable 1=enable,
   ENDIF
 
-;; BUG! Line Numbers Swapped
-LCD_LINE0: equ   $C0    ; LCD command: set cursor to begin of line 0 (Command Set Display Data RAM Address)
-LCD_LINE1: equ   $80    ; LCD command: set cursor to begin of line 1 (Command Set Display Data RAM Address)
+
+LCD_LINE0: equ   $80    ; LCD command: set cursor to begin of line 0 (Command Set Display Data RAM Address)
+LCD_LINE1: equ   $C0    ; LCD command: set cursor to begin of line 1 (Command Set Display Data RAM Address)
 
 ; ROM: Code section
 .init:  SECTION
@@ -204,7 +204,7 @@ writeLine:
           jsr  sel_inst   ; select instruction
           pulb
           cmpb #1
-          bne writeLine1
+          BEQ writeLine1
 writeLine0:
           ldaa #LCD_LINE0 ; set cursor to begin of line 0
           bra  wDo
@@ -215,7 +215,7 @@ wDo:      jsr  outputByte
           jsr  sel_data   ; select data
 
 msg_out:                  ; output the message character by character
-          ldab #16        ; max. 16 characters
+          ldab #17        ; max. 16 characters
 next:     ldaa 0,x        ; get character
 
 

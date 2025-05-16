@@ -2,12 +2,13 @@
 ;   Simple LCD driver for Dragon12's 16 x 2 LCD
 ;                               (16 characters in 2 rows)
 ;
-;   Computerarchitektur
-;   (C) 2019-2022 J. Friedrich, W. Zimmermann, R. Keller
+;   Computerarchitektur 3
+;   (C) 2018 J. Friedrich, W. Zimmermann
 ;   Hochschule Esslingen
 ;
-;   Author:   	   J.Friedrich, W. Zimmermann
-;   Last Modified: R. Keller, August 22, 2022
+;   Author:   J.Friedrich
+;   Modified: W.Zimmermann, Jun  10, 2016
+;
 ;
 ;   Usage:
 ;               JSR initLCD   --> Initialization
@@ -79,8 +80,7 @@ SIMULATOR: EQU 1
 ; Otherwise the software will not work as expected.
 
 ; export symbols
-        XDEF initLCD
-        XDEF writeLine
+        XDEF initLCD, writeLine, delay_10ms
 
 ; include derivative specific macros
         INCLUDE 'mc9s12dp256.inc'
@@ -122,9 +122,9 @@ inidsp2:
 
 ; Defines
 ONE_MS:   equ   4000    ; 4000 x 250ns = 1 ms at 24 MHz bus speed
-FIVE_MS:  equ   20000   ; 5 x above value
-TEN_MS:   equ   40000   ; 10x above value
-FIFTY_US: equ   200     ; 50 usecs = 200*250ns
+FIVE_MS:  equ   20000
+TEN_MS:   equ   40000
+FIFTY_US: equ   200
 
 LCD:      equ   PORTK   ; Port for LCD data bus
 DATAMASK: equ   $3C     ; Bit 5...2 on LCD
@@ -138,13 +138,9 @@ REG_SEL:  equ   $01     ; Bit 0 on LCDCTRL: signal RS: 0=reg,    1=data
         ENABLE:   equ   $02     ; Bit 1 on LCDCTRL: signal E:  0=disable 1=enable,
   ENDIF
 
-;**************************************************************
 
-
-;; Lab Task 3.2 ;; Hardware Addresses Swapped
-
-LCD_LINE0: equ   $C0    ; LCD command: set cursor to begin of line 0 (Command Set Display Data RAM Address)
-LCD_LINE1: equ   $80    ; LCD command: set cursor to begin of line 1 (Command Set Display Data RAM Address)
+LCD_LINE0: equ   $80    ; LCD command: set cursor to begin of line 0 (Command Set Display Data RAM Address)
+LCD_LINE1: equ   $C0    ; LCD command: set cursor to begin of line 1 (Command Set Display Data RAM Address)
 
 ; ROM: Code section
 .init:  SECTION
@@ -157,11 +153,10 @@ initLCD:  pshd
           pshx
 
           jsr  delay_10ms
-          jsr  delay_10ms
 
           movb #$ff, DDRK ; initialize port K as output
           movb #$00, LCDCTRL; ... and set to 0
-  IFDEF  SIMULATOR        ; when running in debugger, vs. when running on real hardware
+  IFDEF  SIMULATOR
           movb #$ff, DDRA ; initialize port A as output
           movb #$00, LCD  ;   ... and set to 0
   ENDIF
@@ -209,7 +204,7 @@ writeLine:
           jsr  sel_inst   ; select instruction
           pulb
           cmpb #1
-          bne writeLine1
+          BEQ writeLine1
 writeLine0:
           ldaa #LCD_LINE0 ; set cursor to begin of line 0
           bra  wDo
@@ -220,13 +215,13 @@ wDo:      jsr  outputByte
           jsr  sel_data   ; select data
 
 msg_out:                  ; output the message character by character
-          ldab #16        ; max. 16 characters
+          ldab #17        ; max. 16 characters
 next:     ldaa 0,x        ; get character
 
 
-
+;; BUG! alignment for short strings is missing!
           TSTA
-          BEQ FILLER 
+          BEQ FILLER
 
           decb
           beq  wEnd       ; not more than 16 characters
@@ -239,7 +234,7 @@ wEnd:     pulx
 
 ;******************************
 
-;; Lab Task 3.2 ;; Hardware Addresses Swapped
+;; Lab Task 3.2 ;; Alignment Filler
 
 FILLER:
           TSTB
@@ -355,3 +350,4 @@ wrtpls:   pula              ; get the temporarily saved value
 
           rts
   ENDIF
+
