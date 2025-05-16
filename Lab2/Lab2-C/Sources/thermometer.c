@@ -28,7 +28,7 @@ int poll_thermometer(void)
 
     while (ATD0STAT0 & AC_DC_CONVERTING_BIT != 0);
 
-    return (ATD0DR0 * 100) / 1023 - 30;
+    return (ATD0DR0 * 50) / 511 - 30;
 }
 
 

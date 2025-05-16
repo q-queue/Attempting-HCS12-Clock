@@ -4,7 +4,7 @@
 #define CLOCK_H_
 
 // properly won't change in run time
-#define LCD_LINE_WIDTH 15
+#define LCD_LINE_WIDTH 16
 
 void init_clock(void);
 

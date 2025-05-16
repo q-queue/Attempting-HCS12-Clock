@@ -13,9 +13,15 @@
 /****** Global variables ******/
 // -----------------------------
 
+#ifdef SIMULATOR
+    #define BUTTONS_POLLING_RATE     47
+#else
+    #define BUTTONS_POLLING_RATE     27
+#endif
+
 #define CLOCK_TICKING_RATE       100
-#define BUTTONS_POLLING_RATE     30
-#define THERMOMETER_POLLING_RATE 150
+
+#define THERMOMETER_POLLING_RATE 10
 
 #define LCD_TIME_RENDING_RATE    25
 #define LCD_TITLE_RENDING_RATE   40
