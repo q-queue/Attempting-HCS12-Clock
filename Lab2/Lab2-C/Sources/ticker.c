@@ -11,10 +11,10 @@
 // -------------------------------------------------------------
 
 // value will be incremented on each timer trigger
-unsigned char* ticker;
+static unsigned char* ticker;
     // external reference to be captured at initialization
 
-void (*in_sync_callback) (void);
+static void (*in_sync_callback) (void);
 
 // -------------------------------------------------------------
 
@@ -55,7 +55,6 @@ static void init_timer_uint()
 
     // sets bits to one where there are ones in the mask
     TCTL_REGISTER = TCTL_REGISTER | TCTL_MODE_AND_MASKING;
-
 }
 
 // ----------------------------
@@ -64,14 +63,14 @@ static void init_timer_uint()
 #define NEXT_TIMER_TRIGGER     TEN_MS
 #define ENABLE_TIMER_UNT       0x80
 
-#define TC             TC4
+#define TC                     TC4
 
 // not exported as a definition but referenced in the interrupt table
 
 interrupt 12 void TimerISR(void)
 {
-    TC4 += NEXT_TIMER_TRIGGER;    // setup next interrupt timer
-    TFLG1 |= TIMER_CH4;       // clears the interrupt flag
+    TC += NEXT_TIMER_TRIGGER;    // setup next interrupt timer
+    TFLG1 |= TIMER_CH;       // clears the interrupt flag
 
     *ticker += 1;         // indicates how many NEXT_TIMER_TRIGGER have passed
 

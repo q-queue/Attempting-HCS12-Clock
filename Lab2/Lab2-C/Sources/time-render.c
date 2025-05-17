@@ -7,9 +7,9 @@
 /****** Global variables ******/
 // -----------------------------
 
-unsigned char AM_PM_MODE = 1;   // initial state
+static unsigned char AM_PM_MODE = 1;   // initial state
 
-char TIME_LINE[LCD_LINE_WIDTH];
+static char TIME_LINE[LCD_LINE_WIDTH];
 
 // right aligned
     #define hours_str             (TIME_LINE)
@@ -43,11 +43,11 @@ static void signed_decToASCII(int number, char* at, unsigned char digits)
 {
     // requires one extra space for the sign
 
-    *at = ' ';
+    at[0] = ' ';
 
     if (number < 0)
     {
-        *at = '-';
+        at[0] = '-';
         number = -number; // ~number +1
     }
 
@@ -67,25 +67,24 @@ void init_time_render()
 {
     fill(TIME_LINE, ' ', LCD_LINE_WIDTH);   // initialize buffer line
 
+    hm_separator[0] = ':';
+    ms_separator[0] = ':';
+
     #ifdef SIMULATOR
-        *temperature_unit_str = 0xB0;
+        temperature_unit_str[0] = 0xB0;
     #else
-        *temperature_unit_str = 0xDF;
+        temperature_unit_str[0] = 0xDF;
     #endif
 
-    *hm_separator = ':';
-    *ms_separator = ':';
-
-    *(temperature_unit_str +1) = 'C';
-
+    temperature_unit_str[1] = 'C';
 }
 
 // ----------------------------
 
 void toggle_am_pm(void)
 {
-    *AM_PM_str = ' ';
-    *(AM_PM_str +1) = ' ';
+    AM_PM_str[0] = ' ';
+    AM_PM_str[1] = ' ';
 
     AM_PM_MODE = !AM_PM_MODE;
 }
@@ -97,15 +96,15 @@ static unsigned char represent_hours(unsigned char hours)
     if (!AM_PM_MODE) return hours;
 
     // side effect!
-    *AM_PM_str = 'A';
-    *(AM_PM_str +1) = 'M';      // assumes morning
+    AM_PM_str[0] = 'A';
+    AM_PM_str[1] = 'M';      // assumes morning
 
     if (hours < 13)
     {
         if (hours == 0) return 12U;
         return hours;
     }
-    *AM_PM_str = 'P';
+    AM_PM_str[0] = 'P';
     return hours - 12;
 }
 

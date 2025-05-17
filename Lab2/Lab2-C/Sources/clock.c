@@ -23,25 +23,23 @@
 #define LCD_TITLE_RENDING_RATE   40
     // Title refresh rate is a multiple of Time one!
 
-unsigned char hours   = 23;
-unsigned char minutes = 59;
-unsigned char seconds = 45;
+static unsigned char hours   = 23;
+static unsigned char minutes = 59;
+static unsigned char seconds = 45;
 
-int temperature;    // doesn't make much sense to initialize
+static int temperature;    // doesn't make much sense to initialize
 
 // -----------------------------
 
 // Time Keeper / External Cock / should be in 10ms tact!
 
-unsigned char timer_ticks = 0;
+static Counter clock;
 
-Counter clock;
+static Counter buttons_polling;
 
-Counter buttons_polling;
+static Counter thermometer_polling;
 
-Counter thermometer_polling;
-
-Counter time_rending, title_rending;
+static Counter time_rending, title_rending;
 
 // -----------------------------
 /*** Local Bound Functions ****/
@@ -91,11 +89,11 @@ static void init_set_mode(void)
 // ------------
 
 
-void (*CLOCK_MODE)(void) = ticking_mode;
-void (*NEXT_CLOCK_MODE)(void) = set_mode;
+static void (*CLOCK_MODE)(void) = ticking_mode;
+static void (*NEXT_CLOCK_MODE)(void) = set_mode;
 
-void (*INIT_CLOCK_MODE)(void) = init_ticking_mode;
-void (*INIT_NEXT_CLOCK_MODE)(void) = init_set_mode;
+static void (*INIT_CLOCK_MODE)(void) = init_ticking_mode;
+static void (*INIT_NEXT_CLOCK_MODE)(void) = init_set_mode;
 
 
 // ------------
@@ -150,12 +148,12 @@ static void init_clock_buttons(void)
 {
     init_buttons(ENABLE_PTH3 | ENABLE_PTH7);
 
-    BUTTONS_ENTRIES_TABLE[PTH3_TABLE_ENTRY] = switch_clock_mode;
-    BUTTONS_ENTRIES_TABLE[PTH7_TABLE_ENTRY] = toggle_am_pm;
+    BUTTONS_CALLBACK_REGISTRAR[PTH3_TABLE_ENTRY] = switch_clock_mode;
+    BUTTONS_CALLBACK_REGISTRAR[PTH7_TABLE_ENTRY] = toggle_am_pm;
 
-    BUTTONS_ENTRIES_TABLE[PTH2_TABLE_ENTRY] = inc_hours;
-    BUTTONS_ENTRIES_TABLE[PTH1_TABLE_ENTRY] = inc_minutes;
-    BUTTONS_ENTRIES_TABLE[PTH0_TABLE_ENTRY] = inc_seconds;
+    BUTTONS_CALLBACK_REGISTRAR[PTH2_TABLE_ENTRY] = inc_hours;
+    BUTTONS_CALLBACK_REGISTRAR[PTH1_TABLE_ENTRY] = inc_minutes;
+    BUTTONS_CALLBACK_REGISTRAR[PTH0_TABLE_ENTRY] = inc_seconds;
 }
 
 // -----------------------------
@@ -181,7 +179,7 @@ static void lcd_rendering_callback(void)
 
 // -----------------------------
 
-char* TITLES[] = {
+static char* TITLES[] = {
     "Clock Template",
     "(C) HE Prof. Z",
     "(C) IT SS2025",
@@ -247,6 +245,8 @@ static void lazy_scheduled_tasks(void)
 // -----------------------------
 void start_clock_loop(void)
 {
+    unsigned char timer_ticks = 0;
+
     unsigned char clock_event = 1;  // needed to run counters first task
 
     init_ticker(                 // towards semaphore-ish behaviour.

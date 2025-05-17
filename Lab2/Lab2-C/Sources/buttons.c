@@ -6,16 +6,14 @@
 
 #pragma LINK_INFO DERIVATIVE "mc9s12dp256b"
 
-unsigned char enabled = 0x00;
+static unsigned char enabled = 0x00;
 
-static unsigned char get_buttons()
-{
-    #ifndef SIMULATOR
-        return ~PTH & enabled;
-    #else
-        return PTH & enabled;
-    #endif
-}
+#ifndef SIMULATOR
+    // inlined
+    #define poll_buttons_state() (~PTH & enabled)
+#else
+    #define poll_buttons_state() (PTH & enabled)
+#endif
 
 // -------------------------------------------------------------
 
@@ -25,14 +23,14 @@ static void UNMAPPED(void) { }
 /********** exported **********/
 // -----------------------------
 
-void (*BUTTONS_ENTRIES_TABLE[BUTTONS_COUNT])(void);
+void (*BUTTONS_CALLBACK_REGISTRAR[BUTTONS_COUNT])(void);
 
 void init_buttons(unsigned char enable_initial_state)
 {
     unsigned char i;
 
     for (i = 0; i < BUTTONS_COUNT; i++)
-        BUTTONS_ENTRIES_TABLE[i] = UNMAPPED;
+        BUTTONS_CALLBACK_REGISTRAR[i] = UNMAPPED;
 
     DDRH = 0x00;    // Configure Port H as input register
 
@@ -50,16 +48,16 @@ void toggle_enable_buttons(unsigned char mask)
 
 void poll_buttons(void)
 {
-    unsigned char i, mask, buttons;
+    unsigned char buttons = poll_buttons_state();
 
-    buttons = get_buttons();
+    unsigned char mask = 1;
 
-    mask = 1;
+    unsigned char i;
 
     for (i = 0; i < BUTTONS_COUNT; i++)
     {
         if (mask & buttons)
-            BUTTONS_ENTRIES_TABLE[i]();
+            BUTTONS_CALLBACK_REGISTRAR[i]();
 
         mask = mask << 1;
     }

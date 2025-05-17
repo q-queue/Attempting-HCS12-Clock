@@ -34,7 +34,7 @@
 
 void init_buttons(unsigned char enable_initial_state);
 
-extern void (*BUTTONS_ENTRIES_TABLE[BUTTONS_COUNT])(void);   // only after initialization!
+extern void (*BUTTONS_CALLBACK_REGISTRAR[BUTTONS_COUNT])(void);   // only after initialization!
 
 void toggle_enable_buttons(unsigned char mask);
 

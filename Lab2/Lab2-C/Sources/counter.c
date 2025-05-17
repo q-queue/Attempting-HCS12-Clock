@@ -12,7 +12,7 @@ void countdown(Counter* counter)
 
 void init_counter(Counter* counter, unsigned char reset_on, void (*subroutine) (void))
 {
-    counter->ticker   = 1;
+    counter->ticker   = 0;
     counter->reset    = reset_on -1;
     counter->callback = subroutine;
 }

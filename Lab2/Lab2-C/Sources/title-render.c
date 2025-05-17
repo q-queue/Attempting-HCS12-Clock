@@ -7,9 +7,9 @@
 /****** Global variables ******/
 // -----------------------------
 
-char** starting_title;
-char** current_title;
-char** titles_boundary;
+static char** starting_title;
+static char** current_title;
+static char** titles_boundary;
 
 // -----------------------------
 
