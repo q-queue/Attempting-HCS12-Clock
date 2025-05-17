@@ -14,6 +14,8 @@
 unsigned char* ticker;
     // external reference to be captured at initialization
 
+void (*in_sync_callback) (void);
+
 // -------------------------------------------------------------
 
 
@@ -72,6 +74,8 @@ interrupt 12 void TimerISR(void)
     TFLG1 |= TIMER_CH4;       // clears the interrupt flag
 
     *ticker += 1;         // indicates how many NEXT_TIMER_TRIGGER have passed
+
+    in_sync_callback();  // hard real time tasks
 }
 
 // -------------------------------------------------------------
@@ -80,9 +84,12 @@ interrupt 12 void TimerISR(void)
 /********** exported **********/
 // -----------------------------
 
-void init_ticker(unsigned char* referenced_ticker)
-{
+void init_ticker(
+    unsigned char* referenced_ticker,
+    void (*hard_real_time_task) (void)
+){
     // capture reference
     ticker = referenced_ticker;
     init_timer_uint();
+    in_sync_callback = hard_real_time_task;
 }

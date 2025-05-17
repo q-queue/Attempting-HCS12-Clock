@@ -13,11 +13,7 @@
 /****** Global variables ******/
 // -----------------------------
 
-#ifdef SIMULATOR
-    #define BUTTONS_POLLING_RATE     47
-#else
-    #define BUTTONS_POLLING_RATE     27
-#endif
+#define BUTTONS_POLLING_RATE     31
 
 #define CLOCK_TICKING_RATE       100
 
@@ -210,7 +206,8 @@ void init_clock(void)
     init_title_render(TITLES, SIZEOF(TITLES));
 
     init_counter(&clock, CLOCK_TICKING_RATE, CLOCK_MODE);
-    INIT_CLOCK_MODE();  // no point in dereferencing
+    // INIT_CLOCK_MODE(); // no point in dereferencing a function pointer!
+    (*INIT_CLOCK_MODE)(); // same effect as above! // just like me trying to learn electronics :/
 
     init_counter(&buttons_polling, BUTTONS_POLLING_RATE, poll_buttons);
 
@@ -222,21 +219,61 @@ void init_clock(void)
     init_counter(&title_rending, LCD_TITLE_RENDING_RATE, render_title);
 }
 
+// -----------------------------
+
+static void hard_real_time_tasks(void)
+{
+    // must be in sync
+    countdown(&buttons_polling);
+    countdown(&clock);
+}
+
+// ------------
+
+static void soft_real_time_tasks(void)
+{
+    // allowed to lag a bit behind. But need to catch up eventually!
+}
+
+// ------------
+
+static void lazy_scheduled_tasks(void)
+{
+    // have a minium countdown time but can tolerate some latency
+    countdown(&thermometer_polling);
+    countdown(&time_rending);
+}
+
+// -----------------------------
 void start_clock_loop(void)
 {
+    unsigned char clock_event = 1;  // needed to run counters first task
 
-    init_ticker(&timer_ticks);   // towards semaphore-ish behaviour.
+    init_ticker(                 // towards semaphore-ish behaviour.
+        &timer_ticks,
+        hard_real_time_tasks
+    );
 
     for(;;)                      // Endless loop
     {
-        while (timer_ticks != 0) // catch up if more than one tick went by!
-        {
-          timer_ticks--;
+        // this loop doesn't have a fixed run time!
+        // need to use semaphore to synchronies with the system clock
+        // even that nothing is running in parallel!
 
-          countdown(&buttons_polling);
-          countdown(&clock);
-          countdown(&thermometer_polling);
-          countdown(&time_rending);
+        while (timer_ticks > 0)
+        {
+            // catch-up loop
+            // synchronize with external clock
+            timer_ticks--;
+            clock_event = 1;
+            soft_real_time_tasks();
+        }
+
+        if (clock_event != 0)
+        {
+            // if more ticks went by register as one!
+            clock_event = 0;    // reset clock event flag
+            lazy_scheduled_tasks();
         }
     }
 }
