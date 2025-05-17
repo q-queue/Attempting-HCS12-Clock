@@ -12,7 +12,7 @@ Current Lab2 progress written in assembly. With no C in sight.
 
 ### [Lab2-C](Lab2/Lab2-C)
 
-![C-Side-Effects-isCrazyMurderingRobot.jpg](.experimentations\C-Side-Effects-isCrazyMurderingRobot.jpg)
+![C-Side-Effects-isCrazyMurderingRobot.jpg](.experimentations/C-Side-Effects-isCrazyMurderingRobot.jpg)
 
 Almost everything in C. Except the [lcd.asm](Lab2/Lab2-C/Sources/lcd.asm)!
 
