@@ -100,7 +100,7 @@ static unsigned char represent_hours(unsigned char hours)
     *AM_PM_str = 'A';
     *(AM_PM_str +1) = 'M';      // assumes morning
 
-    if (hours < 12)
+    if (hours < 13)
     {
         if (hours == 0) return 12U;
         return hours;
