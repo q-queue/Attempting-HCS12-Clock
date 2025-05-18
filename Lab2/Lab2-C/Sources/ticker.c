@@ -11,7 +11,7 @@
 // -------------------------------------------------------------
 
 // value will be incremented on each timer trigger
-static unsigned char* ticker;
+static volatile unsigned char* ticker;
     // external reference to be captured at initialization
 
 static void (*in_sync_callback) (void);
@@ -84,7 +84,7 @@ interrupt 12 void TimerISR(void)
 // -----------------------------
 
 void init_ticker(
-    unsigned char* referenced_ticker,
+    volatile unsigned char* referenced_ticker,
     void (*hard_real_time_task) (void)
 ){
     // capture reference

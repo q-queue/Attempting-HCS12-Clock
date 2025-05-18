@@ -204,8 +204,8 @@ void init_clock(void)
     init_title_render(TITLES, SIZEOF(TITLES));
 
     init_counter(&clock, CLOCK_TICKING_RATE, CLOCK_MODE);
-    // INIT_CLOCK_MODE(); // no point in dereferencing a function pointer!
-    (*INIT_CLOCK_MODE)(); // same effect as above! // just like me trying to learn electronics :/
+    INIT_CLOCK_MODE(); // no point in dereferencing a function pointer!
+    // (*INIT_CLOCK_MODE)(); // same effect as above! // just like me trying to learn electronics :/
 
     init_counter(&buttons_polling, BUTTONS_POLLING_RATE, poll_buttons);
 
@@ -223,7 +223,6 @@ static void hard_real_time_tasks(void)
 {
     // must be in sync
     countdown(&buttons_polling);
-    countdown(&clock);
 }
 
 // ------------
@@ -231,6 +230,7 @@ static void hard_real_time_tasks(void)
 static void soft_real_time_tasks(void)
 {
     // allowed to lag a bit behind. But need to catch up eventually!
+    countdown(&clock);
 }
 
 // ------------
@@ -245,9 +245,9 @@ static void lazy_scheduled_tasks(void)
 // -----------------------------
 void start_clock_loop(void)
 {
-    unsigned char timer_ticks = 0;
+    volatile unsigned char timer_ticks = 0;
 
-    unsigned char clock_event = 1;  // needed to run counters first task
+    volatile unsigned char clock_event = 1;  // needed to run counters first task
 
     init_ticker(                 // towards semaphore-ish behaviour.
         &timer_ticks,

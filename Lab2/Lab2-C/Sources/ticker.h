@@ -4,7 +4,7 @@
 #define TICKER_H_    // Header Guards!
 
 void init_ticker(
-    unsigned char*,
+    volatile unsigned char*,
     void (*hard_real_time_task) (void)
 );
 
