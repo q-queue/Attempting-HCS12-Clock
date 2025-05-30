@@ -200,11 +200,11 @@ static void adjust_to_timezone(char REFERENCE_CLOCK_TIME_ZONE)
 
 // ****************************************************************************
 // Allow other modules, e.g. DCF77, so set the time
-// Parameters:  char hours, char minutes, char seconds, char _day, char _month, int _year, , char _weekday
+// Parameters:  char hours, char minutes, char seconds, char _day, char _month, int _year, , char _weekday, char referenced_time_zone
 // Returns:     -
-void setClock(char hours, char minutes, char seconds, char _day, char _month, int _year, char _weekday)
+void setClock(char hours, char minutes, char seconds, char _day, char _month, int _year, char _weekday, char referenced_time_zone)
 {
-    static char clock_time_zone;
+    char clock_time_zone;
 
     day   = _day;
     month = _month;
@@ -220,7 +220,7 @@ void setClock(char hours, char minutes, char seconds, char _day, char _month, in
 
     clock_time_zone = CLOCK_TIME_ZONE;
 
-    CLOCK_TIME_ZONE = getTimeZoneDCF77();
+    CLOCK_TIME_ZONE = referenced_time_zone;
 
     adjust_to_timezone(clock_time_zone);    // adjust back to current clock time zone
 }

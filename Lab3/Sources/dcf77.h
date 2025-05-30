@@ -24,5 +24,3 @@ void initDCF77(void);
 DCF77EVENT sampleSignalDCF77(int currentTime);
 void processEventsDCF77(DCF77EVENT event);
 
-char getTimeZoneDCF77(void);
-

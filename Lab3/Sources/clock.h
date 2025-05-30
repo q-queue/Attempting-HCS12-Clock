@@ -16,6 +16,6 @@ extern CLOCKEVENT clockEvent;
 // Public functions, for details see clock.c
 void initClock(void);
 void processEventsClock(CLOCKEVENT event);
-void setClock(char hours, char minutes, char seconds, char day, char month, int year, char weekday);
+void setClock(char hours, char minutes, char seconds, char day, char month, int year, char weekday, char referenced_time_zone);
 void displayTimeClock(void);
 void displayDateDcf77(void);

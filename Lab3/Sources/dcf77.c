@@ -53,15 +53,15 @@ void initializePort(void)
 // Parameter:   -
 // Returns:     0 if signal is Low, >0 if signal is High
 #ifdef SIMULATOR
-    static char (*readPort)(void) = readPortSim;
+    #define readPort readPortSim
 #else
 
     static char readPortBoard(void)
     {
-        return ~PTH & 0x01;
+        return PTH & 0x01;
     }
 
-    static char (*readPort)(void) = readPortBoard;
+    #define readPort readPortBoard
 #endif
 
 
@@ -70,19 +70,12 @@ void initializePort(void)
 //  Called once before using the module
 void initDCF77(void)
 {
-    setClock(dcf77Hour, dcf77Minute, 0, dcf77Day, dcf77Month, dcf77Year, dcf77Weekday);
+    setClock(dcf77Hour, dcf77Minute, 0, dcf77Day, dcf77Month, dcf77Year, dcf77Weekday, DC77_UTC_TIME_ZONE);
     displayDateDcf77();
+    
+    setLED(0x04);
 
     initializePort();
-}
-
-// ****************************************************************************
-// getTimeZoneDCF77: returns clock UTC Time Zone
-// Parameter:   -
-// Returns:     char
-char getTimeZoneDCF77(void)
-{
-    return DC77_UTC_TIME_ZONE;
 }
 
 
@@ -187,10 +180,12 @@ static void synchronize_clock(void)
     setClock(
         dcf77Hour, dcf77Minute, 0,
         dcf77Day, dcf77Month, dcf77Year,
-        dcf77Weekday
+        dcf77Weekday,
+        DC77_UTC_TIME_ZONE
     );
 
-    setLED(0x04);   // Req 1.5
+    setLED(0x08);   // Req 1.5
+    clrLED(0x04);
 }
 
 // -------------------------------------------------------------
@@ -199,7 +194,7 @@ static void decode_year(DCF77EVENT event)
 {
     char bit = (event == VALID_ONE) ? 1 : 0;
 
-    if (received_bit == 57) // check parity
+    if (received_bit == 58) // check parity
     {
         transition = RESET_FSM;
 
@@ -329,10 +324,12 @@ static void decode_clock_info(DCF77EVENT event)
 
 static void wait_for_minute_end(DCF77EVENT event)
 {
-    if (event != VALID_MINUTE)
+    if (event != VALID_MINUTE)  // stay in waiting if FSM encounter invalid state
     {
-        clrLED(0x04);   // Req 1.5
+        setLED(0x04);   // Req 1.5
+        clrLED(0x08);
         valid_transmission = 0; // de-validate transmission sequence without proper stop
+        transition = RESET_FSM; // it's a trap
         return;
     }
 
@@ -364,20 +361,16 @@ static void wait_for_minute_end(DCF77EVENT event)
 void processEventsDCF77(DCF77EVENT event)
 {
 
-    static DCF77EVENT last_event;
-
     if (event == INVALID || event == VALID_MINUTE)
     {
         RESET_FSM(event);
         return;
     }
 
-    if (event == VALID_SECOND)
+    if (event == VALID_ONE || event == VALID_ZERO)
     {
-        transition(last_event);
+        transition(event);
         received_bit++;
-    }
-
-    last_event = event;
+    }    
 }
 
