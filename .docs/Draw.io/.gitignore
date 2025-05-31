@@ -1,0 +1,7 @@
+
+.$*.bkp
+
+*.png
+*.svg
+
+!.assets
