@@ -390,7 +390,6 @@ static void wait_for_minute_end(DCF77EVENT event)
 // Returns:     -
 void processEventsDCF77(DCF77EVENT event)
 {
-
     switch (event)
     {
         case INVALID:

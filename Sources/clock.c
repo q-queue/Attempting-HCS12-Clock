@@ -70,7 +70,7 @@ static const unsigned char KNOWN_TIME_ZONES_COUNT = SIZEOF(CURRENT_TIME_ZONES);
 
 static char CLOCK_TIME_ZONE = CLOCK_INITIAL_TIME_ZONE;
 
-static char LAST_REFRENCED_CLOCK_TIME_ZONE = +2;
+static char LAST_REFERENCED_CLOCK_TIME_ZONE = +2;
 
 // ------------
 
@@ -131,12 +131,10 @@ void poll_buttons(void)
     if (poll_buttons_state() & TOGGLE_TIME_ZONE_BUTTON)
     {
         toggle_time_zone();
-            
+
         displayTimeClock();
         displayDateDcf77();
     }
-
-
 }
 
 // ****************************************************************************
@@ -159,26 +157,6 @@ void tick10ms(void)
 }
 
 // ****************************************************************************
-// Process the clock events
-// This function is called every second and will update the internal time values.
-// Parameter:   clock event, normally SECONDTICK
-// Returns:     -
-void processEventsClock(CLOCKEVENT event)
-{   if (event==NOCLOCKEVENT)
-        return;
-
-    if (++secs >= 60)
-    {   secs = 0;
-        if (++mins >= 60)
-        {   mins = 0;
-            if (++hrs >= 24)
-            {   hrs = 0;
-            }
-        }
-     }
-}
-
-// ****************************************************************************
 
 #define is_leap_year(year) (((year) % 4 == 0 && (year) % 100 != 0) || ((year) % 400 == 0))
 
@@ -194,6 +172,39 @@ static char days_in_month(char month, int year)
 
     return months_days[month];
 }
+
+// ****************************************************************************
+// Process the clock events
+// This function is called every second and will update the internal time values.
+// Parameter:   clock event, normally SECONDTICK
+// Returns:     -
+void processEventsClock(CLOCKEVENT event)
+{   if (event==NOCLOCKEVENT)
+        return;
+
+    if (++secs >= 60)
+    {   secs = 0;
+        if (++mins >= 60)
+        {   mins = 0;
+            if (++hrs >= 24)
+            {   hrs = 0;
+                if (++day > days_in_month(month, year))
+                {   day = 1;
+                    if (++month > 12)
+                    {   month = 1;
+                        year++;
+                    }
+                }
+                if (++weekday > 7)
+                { weekday = 1;
+                }
+            }
+        }
+     }
+}
+
+// ****************************************************************************
+
 
 static void adjust_to_timezone(char reference_clock_time_zone)
 {
@@ -272,16 +283,16 @@ void setClock(char hours, char minutes, char seconds, char _day, char _month, in
 
     ticks = 0;
     
-    if (referenced_time_zone != LAST_REFRENCED_CLOCK_TIME_ZONE)
+    if (referenced_time_zone != LAST_REFERENCED_CLOCK_TIME_ZONE)
     {
         // time zone change needs to stay relative to the reference // somer/winter time
         
-        clock_time_zone += (referenced_time_zone - LAST_REFRENCED_CLOCK_TIME_ZONE);
+        clock_time_zone += (referenced_time_zone - LAST_REFERENCED_CLOCK_TIME_ZONE);
         
         for (i = 0; i < KNOWN_TIME_ZONES_COUNT; i++)
-            CURRENT_TIME_ZONES[i] = CURRENT_TIME_ZONES[i] + (referenced_time_zone - LAST_REFRENCED_CLOCK_TIME_ZONE);
+            CURRENT_TIME_ZONES[i] = CURRENT_TIME_ZONES[i] + (referenced_time_zone - LAST_REFERENCED_CLOCK_TIME_ZONE);
 
-        LAST_REFRENCED_CLOCK_TIME_ZONE = referenced_time_zone;
+        LAST_REFERENCED_CLOCK_TIME_ZONE = referenced_time_zone;
         // untested code!
     }
 
